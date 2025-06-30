@@ -1,0 +1,15 @@
+<div style="text-align:center; margin-top: 20px;">
+  <h1>SRT Timestamp Converter</h1>
+  <input type="file" (change)="onFileSelected($event)" multiple accept=".txt" />
+</div>
+
+<div *ngIf="convertedFiles.length > 0" style="margin-top: 20px;">
+  <h2>Converted Files</h2>
+  <ul>
+    <li *ngFor="let file of convertedFiles">
+      {{file.name}} 
+      <button (click)="downloadFile(file)">Download</button>
+      <button (click)="deleteFile(file)">Delete</button>
+    </li>
+  </ul>
+</div>
