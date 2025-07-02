@@ -1,15 +1,37 @@
 <div style="text-align:center; margin-top: 20px;">
   <h1>SRT Timestamp Converter</h1>
-  <input type="file" (change)="onFileSelected($event)" multiple accept=".txt" />
+  <div 
+    class="drop-zone" 
+    (drop)="onDrop($event)" 
+    (dragover)="onDragOver($event)" 
+    (dragleave)="onDragLeave($event)"
+    [class.dragover]="isDragOver"
+    style="border: 2px dashed #007bff; border-radius: 4px; padding: 20px; cursor: pointer;"
+  >
+    <span>Drag & drop .txt files here or</span>
+    <input type="file" (change)="onFileSelected($event)" multiple accept=".txt" style="display:inline-block; margin-left:8px;" />
+  </div>
 </div>
 
 <div *ngIf="convertedFiles.length > 0" style="margin-top: 20px;">
   <h2>Converted Files</h2>
+  <div style="text-align:right; margin-bottom: 10px;">
+    <select [(ngModel)]="downloadType" style="padding: 4px 8px;">
+      <option value="srt">.srt</option>
+      <option value="txt">.txt</option>
+    </select>
+    <span style="margin-left: 8px; font-size: 14px; color: #555;">Download as</span>
+    <button (click)="downloadAll()" style="margin-left: 16px;">Download All</button>
+  </div>
   <ul>
     <li *ngFor="let file of convertedFiles">
-      {{file.name}} 
+      {{file.name}}
       <button (click)="downloadFile(file)">Download</button>
       <button (click)="deleteFile(file)">Delete</button>
     </li>
   </ul>
 </div>
+
+<footer class="footer-signature" style="text-align:right; margin-top: 20px;">
+  Developed by <span>Srinath</span>
+</footer>

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import * as JSZip from 'jszip';
 
 @Component({
   selector: 'app-root',
@@ -7,6 +8,8 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   convertedFiles: {name: string, content: string}[] = [];
+  downloadType: string = 'srt';
+  isDragOver = false;
 
   onFileSelected(event: any) {
     const files: FileList = event.target.files;
@@ -32,16 +35,54 @@ export class AppComponent {
   }
 
   downloadFile(file: {name: string, content: string}) {
+    let baseName = file.name.replace(/\.[^.]+$/, '');
+    let downloadName = baseName + '.' + this.downloadType;
     const blob = new Blob([file.content], {type: 'text/plain'});
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = file.name;
+    a.download = downloadName;
     a.click();
     window.URL.revokeObjectURL(url);
   }
 
   deleteFile(file: {name: string, content: string}) {
     this.convertedFiles = this.convertedFiles.filter(f => f !== file);
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver = false;
+    if (event.dataTransfer && event.dataTransfer.files.length > 0) {
+      const fileEvent = { target: { files: event.dataTransfer.files } };
+      this.onFileSelected(fileEvent);
+    }
+  }
+
+  async downloadAll() {
+    if (this.convertedFiles.length === 0) return;
+    const zip = new JSZip();
+    this.convertedFiles.forEach(file => {
+      let baseName = file.name.replace(/\.[^.]+$/, '');
+      let downloadName = baseName + '.' + this.downloadType;
+      zip.file(downloadName, file.content);
+    });
+    const content = await zip.generateAsync({ type: 'blob' });
+    const url = window.URL.createObjectURL(content);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'converted-files.zip';
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 }
