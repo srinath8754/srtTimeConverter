@@ -27,9 +27,11 @@ export class AppComponent {
   }
 
   convertSrtTimestamps(content: string): string {
-    // Only convert timestamps in mm:ss,ms format (not already hh:mm:ss,ms)
-    // Matches timestamps at the start of a line or after a space, not preceded by a digit and colon
-    return content.replace(/(?<!\d:)\b(\d{2}):(\d{2}),(\d{3})\b/g, (match, mm, ss, ms) => {
+    // Convert mm:ss,ms (ms 1-3 digits) to hh:mm:ss,ms (pad ms to 3 digits, but if ms is 1 digit, pad with two zeros; if 2 digits, pad with one zero)
+    return content.replace(/(?<!\d:)(\d{2}):(\d{2}),(\d{1,3})\b/g, (match, mm, ss, ms) => {
+      if (ms.length === 1) ms = ms + '00';
+      else if (ms.length === 2) ms = ms + '0';
+      // if ms.length === 3, leave as is
       return `00:${mm}:${ss},${ms}`;
     });
   }
