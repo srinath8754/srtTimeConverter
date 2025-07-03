@@ -1,5 +1,21 @@
+
+
+<!-- Preview Modal -->
+<div *ngIf="previewContent !== null" class="preview-modal">
+  <div class="preview-modal-content">
+    <div class="preview-modal-header">
+      <span class="preview-modal-title">Preview: {{ previewFileName }}</span>
+      <button class="preview-modal-close" (click)="closePreview()" title="Close">&times;</button>
+    </div>
+    <pre class="preview-modal-body">{{ previewContent }}</pre>
+  </div>
+</div>
+<header class="main-header">
+  <span class="main-header-title">SRT Timestamp Converter</span>
+</header>
+
 <div style="text-align:center; margin-top: 20px;">
-  <h2>SRT Timestamp Converter</h2>  
+  <h2 style="display:none;">SRT Timestamp Converter</h2>  
   <div 
     class="drop-zone" 
     (drop)="onDrop($event)" 
@@ -25,9 +41,12 @@
   </div>
   <ul>
     <li *ngFor="let file of convertedFiles">
-      {{file.name}}
-      <button (click)="downloadFile(file)">Download</button>
-      <button (click)="deleteFile(file)">Delete</button>
+      <span class="file-name">{{file.name}}</span>
+      <span class="file-actions">
+        <button (click)="openPreview(file)">Preview</button>
+        <button (click)="downloadFile(file)">Download</button>
+        <button (click)="deleteFile(file)">Delete</button>
+      </span>
     </li>
   </ul>
 </div>

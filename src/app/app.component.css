@@ -1,3 +1,73 @@
+/* Preview Modal Styles */
+.preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(30, 34, 90, 0.45);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 32px rgba(30,34,90,0.18);
+  max-width: 90vw;
+  width: 480px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.preview-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1976d2;
+  color: #fff;
+  padding: 12px 20px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.preview-modal-title {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preview-modal-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.6rem;
+  cursor: pointer;
+  margin-left: 16px;
+  padding: 0 8px;
+  transition: color 0.2s;
+}
+.preview-modal-close:hover {
+  color: #ffe082;
+}
+
+.preview-modal-body {
+  background: #f8fafc;
+  color: #222;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  font-size: 1rem;
+  padding: 18px 20px;
+  overflow-x: auto;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 /* App-wide styles for a clean, modern, and responsive look */
 
 :host {
@@ -12,7 +82,7 @@ div {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   padding: 32px 24px;
   margin: 32px auto 0 auto;
-  max-width: 480px;
+  /* max-width: 480px; */
 }
 
 h1, h2 {
@@ -35,6 +105,31 @@ li {
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+li > .file-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+li > .file-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+li > span, li > div, li > button {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+li > button {
+  margin-left: 0;
 }
 
 input[type="file"] {
@@ -82,7 +177,7 @@ button:hover {
   transition: background 0.2s, border-color 0.2s;
   display: inline-block;
   width: 90%;
-  max-width: 400px;
+ /*max-width: 400px;*/
   cursor: pointer;
 }
 
@@ -173,6 +268,32 @@ button:hover {
   color: #ffe082;
 }
 
+.main-header {
+  display: -moz-flex;
+  display: -webkit-flex;
+  display: -ms-flex;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  min-height: 64px;
+  background-color: #5e42a6;
+  color: #fff;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  box-shadow: 0 2px 8px rgba(94, 66, 166, 0.08);
+  margin-bottom: 0;
+  z-index: 100;
+}
+
+.main-header-title {
+  padding: 16px 0;
+  text-align: center;
+  width: 100%;
+}
+
 @media (max-width: 600px) {
   div {
     padding: 16px 4px;
@@ -180,10 +301,19 @@ button:hover {
   }
   li {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 8px;
+  }
+  li > button {
+    width: 100%;
+    margin-left: 0;
   }
   button, select {
     margin: 8px 0 0 0;
+    width: 100%;
+  }
+  li > .file-actions {
+    flex-direction: column;
     width: 100%;
   }
 }

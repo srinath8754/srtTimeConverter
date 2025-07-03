@@ -11,6 +11,19 @@ export class AppComponent {
   downloadType: string = 'txt';
   isDragOver = false;
 
+  previewContent: string | null = null;
+  previewFileName: string = '';
+
+  openPreview(file: {name: string, content: string}) {
+    this.previewContent = file.content;
+    this.previewFileName = file.name;
+  }
+
+  closePreview() {
+    this.previewContent = null;
+    this.previewFileName = '';
+  }
+
   onFileSelected(event: any) {
     const files: FileList = event.target.files;
     this.convertedFiles = [];
