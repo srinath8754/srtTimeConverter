@@ -8,7 +8,7 @@ import * as JSZip from 'jszip';
 })
 export class AppComponent {
   convertedFiles: {name: string, content: string}[] = [];
-  downloadType: string = 'srt';
+  downloadType: string = 'txt';
   isDragOver = false;
 
   onFileSelected(event: any) {
@@ -27,13 +27,19 @@ export class AppComponent {
   }
 
   convertSrtTimestamps(content: string): string {
-    // Convert mm:ss,ms (ms 1-3 digits) to hh:mm:ss,ms (pad ms to 3 digits, but if ms is 1 digit, pad with two zeros; if 2 digits, pad with one zero)
-    return content.replace(/(?<!\d:)(\d{2}):(\d{2}),(\d{1,3})\b/g, (match, mm, ss, ms) => {
-      if (ms.length === 1) ms = ms + '00';
-      else if (ms.length === 2) ms = ms + '0';
-      // if ms.length === 3, leave as is
+    // 1. Pad milliseconds to 3 digits for hh:mm:ss,ms and mm:ss,ms
+    // 2. Convert mm:ss,ms to hh:mm:ss,ms (with padded ms)
+    // First, handle mm:ss,ms (not preceded by a digit and colon)
+    content = content.replace(/(?<!\d:)(\d{2}):(\d{2}),(\d{1,3})/g, (match, mm, ss, ms) => {
+      while (ms.length < 3) ms += '0';
       return `00:${mm}:${ss},${ms}`;
     });
+    // Then, handle already-correct hh:mm:ss,ms but ms < 3 digits
+    content = content.replace(/(\d{2}:\d{2}:\d{2}),(\d{1,3})/g, (match, time, ms) => {
+      while (ms.length < 3) ms += '0';
+      return `${time},${ms}`;
+    });
+    return content;
   }
 
   downloadFile(file: {name: string, content: string}) {
