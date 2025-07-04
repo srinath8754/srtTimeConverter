@@ -1,4 +1,6 @@
+// ...existing code...
 import { Component } from '@angular/core';
+import srtValidator from 'srt-validator';
 import * as JSZip from 'jszip';
 
 @Component({
@@ -7,21 +9,41 @@ import * as JSZip from 'jszip';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  convertedFiles: {name: string, content: string}[] = [];
+  convertedFiles: {name: string, content: string, errors?: any[], hasCriticalError?: boolean}[] = [];
   downloadType: string = 'txt';
   isDragOver = false;
 
   previewContent: string | null = null;
   previewFileName: string = '';
+  previewErrorLines: Set<number> = new Set();
 
-  openPreview(file: {name: string, content: string}) {
+  openPreview(file: {name: string, content: string, errors?: any[]}) {
     this.previewContent = file.content;
     this.previewFileName = file.name;
+    this.previewErrorLines = new Set();
+    // Only highlight invalid lines
+    if (file.errors && file.errors.length > 0) {
+      file.errors.forEach(err => {
+        if (typeof err.lineNumber === 'number') {
+          this.previewErrorLines.add(err.lineNumber);
+        }
+      });
+    }
+    // Highlight lines with any timestamp format other than HH:MM:SS,mmm --> HH:MM:SS,mmm as invalid
+    const lines = file.content.split('\n');
+    const validSrtTimeLine = /^(\d{2}:\d{2}:\d{2},\d{3})\s+-->\s+(\d{2}:\d{2}:\d{2},\d{3})$/;
+    lines.forEach((line, idx) => {
+      // If line looks like a timestamp but is not exactly valid, highlight it
+      if (/-->/g.test(line) && !validSrtTimeLine.test(line.trim())) {
+        this.previewErrorLines.add(idx + 1);
+      }
+    });
   }
 
   closePreview() {
     this.previewContent = null;
     this.previewFileName = '';
+    this.previewErrorLines = new Set();
   }
 
   onFileSelected(event: any) {
@@ -33,7 +55,22 @@ export class AppComponent {
       reader.onload = (e: any) => {
         const text = e.target.result;
         const converted = this.convertSrtTimestamps(text);
-        this.convertedFiles.push({name: file.name, content: converted});
+        const errors = srtValidator(converted);
+        // If any error is about time, format, order, overlap, or start/end, mark file as having errors
+        let hasCriticalError = false;
+        // Check for invalid timestamp lines (not just srtValidator errors)
+        const lines = converted.split('\n');
+        const validSrtTimeLine = /^(\d{2}:\d{2}:\d{2},\d{3})\s+-->\s+(\d{2}:\d{2}:\d{2},\d{3})$/;
+        const hasInvalidTimestamp = lines.some(line => /-->/g.test(line) && !validSrtTimeLine.test(line.trim()));
+        if (errors && errors.length > 0) {
+          hasCriticalError = errors.some(err =>
+            err.message && /-->|time|format|chronology|order|invalid|overlap|start|end/i.test(err.message)
+          );
+        }
+        if (hasInvalidTimestamp) {
+          hasCriticalError = true;
+        }
+        this.convertedFiles.push({name: file.name, content: converted, errors, hasCriticalError});
       };
       reader.readAsText(file);
     });

@@ -1,13 +1,19 @@
 
 
-<!-- Preview Modal -->
+<!-- Preview Modal (single, clean) -->
 <div *ngIf="previewContent !== null" class="preview-modal">
   <div class="preview-modal-content">
     <div class="preview-modal-header">
       <span class="preview-modal-title">Preview: {{ previewFileName }}</span>
       <button class="preview-modal-close" (click)="closePreview()" title="Close">&times;</button>
     </div>
-    <pre class="preview-modal-body">{{ previewContent }}</pre>
+    <pre class="preview-modal-body">
+      <ng-container *ngIf="previewContent !== null">
+        <ng-container *ngFor="let line of previewContent.split('\n'); let i = index">
+          <span [ngStyle]="previewErrorLines.has(i+1) ? {'background-color':'#ffd6d6','color':'#d32f2f','font-weight':'bold'} : {}">{{ line }}</span>
+        </ng-container>
+      </ng-container>
+    </pre>
   </div>
 </div>
 <header class="main-header">
@@ -39,16 +45,21 @@
     <span style="margin-left: 8px; font-size: 14px; color: #555;">Download as</span>
     <button (click)="downloadAll()" style="margin-left: 16px;">Download All</button>
   </div>
-  <ul>
-    <li *ngFor="let file of convertedFiles">
-      <span class="file-name">{{file.name}}</span>
-      <span class="file-actions">
-        <button (click)="openPreview(file)">Preview</button>
-        <button (click)="downloadFile(file)">Download</button>
-        <button (click)="deleteFile(file)">Delete</button>
-      </span>
-    </li>
-  </ul>
+<ul>
+  <li *ngFor="let file of convertedFiles">
+    <span class="file-name">{{file.name}}</span>
+    <span class="file-actions">
+      <button 
+        (click)="openPreview(file)"
+        [ngStyle]="file.hasCriticalError ? {'background-color':'#d32f2f', 'color':'#fff'} : {}"
+        [attr.aria-label]="file.hasCriticalError ? 'Preview (SRT errors detected)' : 'Preview'"
+        [attr.title]="file.hasCriticalError ? 'SRT time errors detected in this file' : 'Preview file'"
+      >Preview</button>
+      <button (click)="downloadFile(file)">Download</button>
+      <button (click)="deleteFile(file)">Delete</button>
+    </span>
+  </li>
+</ul>
 </div>
 
 <footer class="footer-signature" style="text-align:right; margin-top: 20px;">

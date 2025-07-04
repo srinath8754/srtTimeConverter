@@ -16,12 +16,14 @@
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 32px rgba(30,34,90,0.18);
-  max-width: 90vw;
-  width: 480px;
-  max-height: 80vh;
+  max-width: 98vw;
+  width: 600px;
+  min-width: 320px;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  align-items: stretch;
 }
 
 .preview-modal-header {
@@ -67,6 +69,25 @@
   flex: 1 1 auto;
   white-space: pre-wrap;
   word-break: break-word;
+  margin: 0;
+  border: none;
+  min-height: 200px;
+  max-height: 60vh;
+  box-sizing: border-box;
+}
+@media (max-width: 700px) {
+  .preview-modal-content {
+    width: 98vw;
+    min-width: 0;
+    max-width: 100vw;
+    padding: 0;
+  }
+  .preview-modal-body {
+    padding: 8px 2vw;
+    font-size: 0.95rem;
+    min-height: 120px;
+    max-height: 50vh;
+  }
 }
 /* App-wide styles for a clean, modern, and responsive look */
 
