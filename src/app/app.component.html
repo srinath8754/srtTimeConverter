@@ -1,19 +1,66 @@
-
-
 <!-- Preview Modal (single, clean) -->
 <div *ngIf="previewContent !== null" class="preview-modal">
   <div class="preview-modal-content">
     <div class="preview-modal-header">
-      <span class="preview-modal-title">Preview: {{ previewFileName }}</span>
+      <span class="preview-modal-title" style="max-width: 40vw; flex: none;">Preview: {{ previewFileName }}</span>
       <button class="preview-modal-close" (click)="closePreview()" title="Close">&times;</button>
+      <select [(ngModel)]="previewDownloadType">
+        <option value="txt">.txt</option>
+        <option value="srt">.srt</option>
+      </select>
+      <button (click)="downloadPreview()" title="Download">Download</button>
+      <button (click)="findNextError()" title="Find next error in table">Find Error</button>
     </div>
-    <pre class="preview-modal-body">
-      <ng-container *ngIf="previewContent !== null">
-        <ng-container *ngFor="let line of previewContent.split('\n'); let i = index">
-          <span [ngStyle]="previewErrorLines.has(i+1) ? {'background-color':'#ffd6d6','color':'#d32f2f','font-weight':'bold'} : {}">{{ line }}</span>
-        </ng-container>
-      </ng-container>
-    </pre>
+    <div class="preview-modal-body">
+      <div style="width:100%; overflow-x:auto;">
+        <table class="table table-bordered" style="min-width:700px; table-layout:fixed; background:#fff;">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th class="col-start">Start Time</th>
+              <th class="col-end">End Time</th>
+              <th class="col-text">Subtitle Text</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let subtitle of subtitles; let i = index">
+              <td class="col-num">{{ i + 1 }}</td>
+              <!-- Start Time -->
+              <td class="col-start">
+                <input
+                  type="text"
+                  class="form-control"
+                  [ngClass]="{'input-error': subtitle.warning && subtitle.warning.toLowerCase().includes('start') || subtitle.warning && subtitle.warning.toLowerCase().includes('overlap') }"
+                  [(ngModel)]="subtitle.start"
+                  (ngModelChange)="validateSubtitleRow(i)"
+                  name="start{{i}}"
+                />
+              </td>
+              <!-- End Time -->
+              <td class="col-end">
+                <input
+                  type="text"
+                  class="form-control"
+                  [ngClass]="{'input-error': subtitle.warning && subtitle.warning.toLowerCase().includes('end') || subtitle.warning && subtitle.warning.toLowerCase().includes('overlap') }"
+                  [(ngModel)]="subtitle.end"
+                  (ngModelChange)="validateSubtitleRow(i)"
+                  name="end{{i}}"
+                />
+              </td>
+              <!-- Subtitle Text + Warnings -->
+              <td class="col-text">
+                <span style="display: block; background: #f8fafc; color: #222; font-family: inherit; font-size: 1em; width: 100%; padding: 4px 0; cursor: default; white-space: pre-line;">
+                  {{ subtitle.text }}
+                </span>
+                <div *ngIf="subtitle.warning" class="text-warning mt-1">
+                  ⚠️ {{ subtitle.warning }}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 <header class="main-header">
