@@ -162,15 +162,26 @@
     </div>
     <div *ngIf="scriptFiles && scriptFiles.length > 0" style="margin-top: 20px;">
       <h2>Script Files</h2>
-      <div style="text-align:right; margin-bottom: 10px;">
-        <button (click)="downloadAllScripts()" style="margin-left: 16px;">Download All Scripts</button>
+      <div style="text-align:right; margin-bottom: 10px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap;">
+        <select [(ngModel)]="scriptDownloadType" style="padding: 4px 8px; min-width: 80px;">
+          <option value="txt">.txt</option>
+          <option value="srt">.srt</option>
+          <option value="docx">.docx</option>
+       </select>
+        <span style="font-size: 14px; color: #555;">Download as</span>
+        <button (click)="downloadAllScripts()" style="margin-left: 8px;">Download All Scripts</button>
       </div>
       <ul>
         <li *ngFor="let file of scriptFiles">
           <span class="file-name">{{file.name}}</span>
           <span class="file-actions">
             <button (click)="openScriptPreview(file)">Preview</button>
-            <button (click)="downloadScriptFile(file, true)">Download (mm:ss)</button>
+            <select [(ngModel)]="file.downloadType" style="padding: 2px 6px; min-width: 70px; margin-right: 6px;">
+              <option value="txt">.txt</option>
+              <option value="srt">.srt</option>
+              <option value="docx">.docx</option>
+            </select>
+            <button (click)="downloadScriptFile(file, file.downloadType)">Download</button>
             <button (click)="deleteScriptFile(file)">Delete</button>
           </span>
 <!-- Script Preview Modal -->
@@ -191,9 +202,11 @@
   </div>
 </div>
 
-<footer class="footer-signature" style="text-align:right; margin-top: 20px;">
-  Developed by <span>Srinath</span><br>
-</footer>
+<div style="width: 96%; display: flex; justify-content: flex-end;">
+  <footer class="footer-signature" style="margin-top: 20px;">
+    Developed by <span>Srinath</span><br>
+  </footer>
+</div>
 <footer class="footer-signature footer-left">
   <span class="footer-owned">Owned by RJ Boopathi</span>
 </footer>

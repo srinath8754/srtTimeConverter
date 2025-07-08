@@ -474,7 +474,7 @@ export class AppComponent implements OnInit {
     window.URL.revokeObjectURL(url);
   }
 
-  scriptFiles: {name: string, content: string}[] = [];
+  scriptFiles: {name: string, content: string, downloadType?: string}[] = [];
   scriptPreviewContent: string | null = null;
   scriptPreviewFileName: string = '';
 
@@ -508,7 +508,7 @@ export class AppComponent implements OnInit {
           const endSec = s2;
           return `${startMin}:${startSec} - ${endMin}:${endSec}`;
         });
-        this.scriptFiles.push({name: file.name, content: text});
+        this.scriptFiles.push({name: file.name, content: text, downloadType: 'txt'});
       };
       reader.readAsText(file);
     });
@@ -523,12 +523,35 @@ export class AppComponent implements OnInit {
     }
   }
 
-  downloadScriptFile(file: {name: string, content: string}, minSec: boolean = false) {
+  downloadScriptFile(file: {name: string, content: string}, type: string = 'txt') {
     let content = file.content;
-    let name = file.name;
-    if (minSec) {
+    let name = file.name.replace(/\.[^.]+$/, '');
+    if (type === 'minsec') {
       content = this.convertSrtToMinSec(content);
-      name = name.replace(/\.txt$/, '_minsec.txt');
+      name = name + '_minsec.txt';
+    } else if (type === 'docx') {
+      // Convert to DOCX
+      const paragraphs: Paragraph[] = [];
+      // Treat each line as a paragraph for script files
+      content.split(/\n/).forEach(line => {
+        paragraphs.push(new Paragraph(line));
+      });
+      const doc = new Document({
+        sections: [
+          { properties: {}, children: paragraphs }
+        ]
+      });
+      Packer.toBlob(doc).then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name + '.docx';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      });
+      return;
+    } else {
+      name = name + '.' + type;
     }
     const blob = new Blob([content], {type: 'text/plain'});
     const url = window.URL.createObjectURL(blob);
@@ -543,12 +566,40 @@ export class AppComponent implements OnInit {
     this.scriptFiles = this.scriptFiles.filter(f => f !== file);
   }
 
+  scriptDownloadType: string = 'txt';
+
   async downloadAllScripts() {
     if (this.scriptFiles.length === 0) return;
+    // Use the selected scriptDownloadType from the UI
+    const type = this.scriptDownloadType || 'txt';
     const zip = new JSZip();
+    const docxPromises: Promise<void>[] = [];
     this.scriptFiles.forEach(file => {
-      zip.file(file.name, file.content);
+      let name = file.name.replace(/\.[^.]+$/, '');
+      if (type === 'mmss') {
+        const content = this.convertSrtToMinSec(file.content);
+        zip.file(name + '_minsec.txt', content);
+      } else if (type === 'docx') {
+        const paragraphs: Paragraph[] = [];
+        file.content.split(/\n/).forEach(line => {
+          paragraphs.push(new Paragraph(line));
+        });
+        const doc = new Document({
+          sections: [
+            { properties: {}, children: paragraphs }
+          ]
+        });
+        const promise = Packer.toBlob(doc).then(blob => {
+          zip.file(name + '.docx', blob);
+        });
+        docxPromises.push(promise);
+      } else {
+        zip.file(name + '.' + type, file.content);
+      }
     });
+    if (type === 'docx') {
+      await Promise.all(docxPromises);
+    }
     const content = await zip.generateAsync({ type: 'blob' });
     const url = window.URL.createObjectURL(content);
     const a = document.createElement('a');
