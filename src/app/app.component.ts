@@ -1,13 +1,27 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import srtValidator from 'srt-validator';
 import * as JSZip from 'jszip';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+  ngOnInit() {
+    this.ensureSubtitleEditingFlags();
+  }
+
+  private ensureSubtitleEditingFlags() {
+    if (Array.isArray(this.subtitles)) {
+      this.subtitles.forEach(sub => {
+        if (typeof sub.isEditing !== 'boolean') {
+          sub.isEditing = false;
+        }
+      });
+    }
+  }
   tabWarning = '';
 
   switchTab(tab: 'timestamp' | 'script') {
@@ -29,6 +43,40 @@ export class AppComponent {
   downloadPreview(): void {
     // Compose SRT from the current subtitles array
     const subtitlesArr = Array.isArray(this.subtitles) ? this.subtitles : [];
+    const ext = (this as any).previewDownloadType ? (this as any).previewDownloadType : 'srt';
+    const baseName = this.previewFileName ? this.previewFileName.replace(/\.[^.]+$/, '') : 'subtitle';
+    const downloadName = baseName + '.' + ext;
+    if (ext === 'docx') {
+      // Generate DOCX from subtitles
+      const paragraphs: Paragraph[] = [];
+      subtitlesArr.forEach((sub, idx) => {
+        // Number, time, text as separate paragraphs for clarity
+        paragraphs.push(new Paragraph({
+          children: [
+            new TextRun({ text: String(idx + 1), bold: true }),
+            new TextRun({ text: '  ' }),
+            new TextRun({ text: sub.start + ' --> ' + sub.end, italics: true, size: 20 })
+          ]
+        }));
+        paragraphs.push(new Paragraph(sub.text));
+        paragraphs.push(new Paragraph(''));
+      });
+      const doc = new Document({
+        sections: [
+          { properties: {}, children: paragraphs }
+        ]
+      });
+      Packer.toBlob(doc).then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = downloadName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      });
+      return;
+    }
+    // Default: txt or srt
     let srt = subtitlesArr.map((sub, idx) => {
       return (
         (idx + 1) + '\n' +
@@ -38,9 +86,6 @@ export class AppComponent {
     }).join('\n');
     // Remove trailing blank lines
     srt = srt.replace(/\n+$/g, '\n');
-    const ext = (this as any).previewDownloadType ? (this as any).previewDownloadType : 'srt';
-    const baseName = this.previewFileName ? this.previewFileName.replace(/\.[^.]+$/, '') : 'subtitle';
-    const downloadName = baseName + '.' + ext;
     const blob = new Blob([srt], {type: 'text/plain'});
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -49,6 +94,22 @@ export class AppComponent {
     a.click();
     window.URL.revokeObjectURL(url);
   }
+
+
+
+
+
+
+  // ...existing code...
+
+  // ...existing code...
+
+
+
+  // ...existing code...
+
+  // ...existing code...
+
   convertedFiles: {name: string, content: string, errors?: any[], hasCriticalError?: boolean}[] = [];
   downloadType: string = 'txt';
   isDragOver = false;
@@ -57,7 +118,7 @@ export class AppComponent {
   previewFileName: string = '';
   previewErrorLines: Set<number> = new Set();
 
-  subtitles: Array<{start: string, end: string, text: string, warning?: string}> = [];
+  subtitles: Array<{start: string, end: string, text: string, warning?: string, isEditing?: boolean}> = [];
 
   // Find error navigation state
   errorIndex = -1;
@@ -182,6 +243,7 @@ export class AppComponent {
     this.previewFileName = file.name;
     this.previewErrorLines = new Set();
     this.parseSrtToSubtitles(file.content);
+    this.ensureSubtitleEditingFlags();
     // Only highlight invalid lines
     if (file.errors && file.errors.length > 0) {
       file.errors.forEach(err => {
@@ -264,6 +326,53 @@ export class AppComponent {
   downloadFile(file: {name: string, content: string}) {
     let baseName = file.name.replace(/\.[^.]+$/, '');
     let downloadName = baseName + '.' + this.downloadType;
+    if (this.downloadType === 'docx') {
+      // Convert SRT or TXT to DOCX
+      const paragraphs: Paragraph[] = [];
+      // If SRT, try to parse and format as subtitle blocks
+      if (/-->/g.test(file.content)) {
+        // SRT: split by double newlines (subtitle blocks)
+        const blocks = file.content.split(/\n{2,}/);
+        for (const block of blocks) {
+          const lines = block.split(/\n/);
+          if (lines.length >= 3) {
+            // SRT block: number, time, text
+            paragraphs.push(new Paragraph({
+              children: [
+                new TextRun({ text: lines[0], bold: true }),
+                new TextRun({ text: ' ' }),
+                new TextRun({ text: lines[1], italics: true, size: 20 }),
+              ],
+            }));
+            paragraphs.push(new Paragraph(lines.slice(2).join('\n')));
+            paragraphs.push(new Paragraph(''));
+          } else {
+            paragraphs.push(new Paragraph(block));
+            paragraphs.push(new Paragraph(''));
+          }
+        }
+      } else {
+        // Plain text: one paragraph per line
+        file.content.split(/\n/).forEach(line => {
+          paragraphs.push(new Paragraph(line));
+        });
+      }
+      const doc = new Document({
+        sections: [
+          { properties: {}, children: paragraphs }
+        ]
+      });
+      Packer.toBlob(doc).then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = downloadName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      });
+      return;
+    }
+    // Default: txt or srt
     const blob = new Blob([file.content], {type: 'text/plain'});
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -273,8 +382,11 @@ export class AppComponent {
     window.URL.revokeObjectURL(url);
   }
 
+  deletedFiles: {name: string, content: string}[] = [];
+
   deleteFile(file: {name: string, content: string}) {
     this.convertedFiles = this.convertedFiles.filter(f => f !== file);
+    this.deletedFiles.push(file);
   }
 
   onDragOver(event: DragEvent) {
@@ -331,8 +443,8 @@ export class AppComponent {
     const files: FileList = event.target.files;
     Array.from(files).forEach(file => {
       const ext = file.name.split('.').pop()?.toLowerCase();
-      if (ext !== 'txt') {
-        alert('Only .txt files are allowed for SRT to Script.');
+      if (ext !== 'txt' && ext !== 'srt') {
+        alert('Only .txt and .srt files are allowed for SRT to Script.');
         return;
       }
       const reader = new FileReader();
@@ -468,3 +580,4 @@ export class AppComponent {
     }
   }
 }
+

@@ -7,6 +7,7 @@
       <select [(ngModel)]="previewDownloadType">
         <option value="txt">.txt</option>
         <option value="srt">.srt</option>
+        <option value="docx">.docx</option>
       </select>
       <button (click)="downloadPreview()" title="Download">Download</button>
       <button (click)="findNextError()" title="Find next error in table">Find Error</button>
@@ -19,7 +20,9 @@
               <th class="col-num">#</th>
               <th class="col-start">Start Time</th>
               <th class="col-end">End Time</th>
-              <th class="col-text">Subtitle Text</th>
+              <th class="col-text">
+                Subtitle Text
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -49,9 +52,16 @@
               </td>
               <!-- Subtitle Text + Warnings -->
               <td class="col-text">
-                <span style="display: block; background: #f8fafc; color: #222; font-family: inherit; font-size: 1em; width: 100%; padding: 4px 0; cursor: default; white-space: pre-line;">
-                  {{ subtitle.text }}
-                </span>
+                <ng-container *ngIf="subtitle.isEditing; else viewSubtitleText">
+                  <textarea [(ngModel)]="subtitle.text" rows="2" style="width:100%; background:#f8fafc; color:#222; font-family:inherit; font-size:1em; padding:4px 0; resize:vertical;"></textarea>
+                  <button (click)="subtitle.isEditing = false" title="Save" style="background:none; border:none; cursor:pointer; color:#1976d2; margin-left:4px;"><span style="font-size:1.2em;">💾</span></button>
+                </ng-container>
+                <ng-template #viewSubtitleText>
+                  <span style="display: block; background: #f8fafc; color: #222; font-family: inherit; font-size: 1em; width: 100%; padding: 4px 0; cursor: default; white-space: pre-line;">
+                    {{ subtitle.text }}
+                  </span>
+                  <button (click)="subtitle.isEditing = true" title="Edit" style="background:none; border:none; cursor:pointer; margin-left:8px;"><span style="font-size:1.2em;">✏️</span></button>
+                </ng-template>
                 <div *ngIf="subtitle.warning" class="text-warning mt-1">
                   ⚠️ {{ subtitle.warning }}
                 </div>
@@ -94,7 +104,7 @@
 
 <div *ngIf="activeTab === 'timestamp'">
   <div style="text-align:center; margin-top: 20px;">
-    <h2 style="display:none;">SRT Timestamp Converter</h2>  
+    <h2>SRT Timestamp Converter</h2>  
     <div 
       class="drop-zone" 
       (drop)="onDrop($event)" 
@@ -113,7 +123,8 @@
     <div style="text-align:right; margin-bottom: 10px;">
       <select [(ngModel)]="downloadType" style="padding: 4px 8px;">
         <option value="txt">.txt</option>
-        <option value="srt">.srt</option>      
+        <option value="srt">.srt</option>
+        <option value="docx">.docx</option>
       </select>
       <span style="margin-left: 8px; font-size: 14px; color: #555;">Download as</span>
       <button (click)="downloadAll()" style="margin-left: 16px;">Download All</button>
@@ -146,8 +157,8 @@
       [class.dragover]="isDragOver"
       style="border: 2px dashed #007bff; border-radius: 4px; padding: 20px; cursor: pointer;"
     >
-      <span>Drag & drop .txt files here or</span>
-      <input type="file" (change)="onFileSelectedScript($event)" multiple accept=".txt" style="display:inline-block; margin-left:8px;" />
+      <span>Drag & drop .txt , .srt files here or</span>
+      <input type="file" (change)="onFileSelectedScript($event)" multiple accept=".txt,.srt" style="display:inline-block; margin-left:8px;" />
     </div>
     <div *ngIf="scriptFiles && scriptFiles.length > 0" style="margin-top: 20px;">
       <h2>Script Files</h2>
