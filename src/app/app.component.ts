@@ -8,6 +8,21 @@ import * as JSZip from 'jszip';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+  tabWarning = '';
+
+  switchTab(tab: 'timestamp' | 'script') {
+    this.tabWarning = 'You are switching tabs. Please make sure to save or download your work before proceeding.';
+    setTimeout(() => { this.tabWarning = ''; }, 0);
+    this.activeTab = tab;
+    // Move focus to the next tab button after switching
+    setTimeout(() => {
+      const tabButtons = document.querySelectorAll('.main-header-tab-btn');
+      if (tabButtons && tabButtons.length > 0) {
+        let idx = tab === 'timestamp' ? 0 : 1;
+        (tabButtons[idx] as HTMLElement).focus();
+      }
+    }, 10);
+  }
   previewDownloadType: string = 'txt';
 
   // Download the current preview (with any edits) as .srt or .txt
@@ -238,6 +253,14 @@ export class AppComponent {
     return content;
   }
 
+  convertSrtToMinSec(content: string): string {
+    // Replace all hh:mm:ss,ms with mm:ss
+    return content.replace(/(\d{2}):(\d{2}):(\d{2}),\d{3}/g, (match, hh, mm, ss) => {
+      const totalMin = parseInt(hh) * 60 + parseInt(mm);
+      return `${totalMin}:${ss}`;
+    });
+  }
+
   downloadFile(file: {name: string, content: string}) {
     let baseName = file.name.replace(/\.[^.]+$/, '');
     let downloadName = baseName + '.' + this.downloadType;
@@ -286,6 +309,90 @@ export class AppComponent {
     const a = document.createElement('a');
     a.href = url;
     a.download = 'converted-files.zip';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  scriptFiles: {name: string, content: string}[] = [];
+  scriptPreviewContent: string | null = null;
+  scriptPreviewFileName: string = '';
+
+  openScriptPreview(file: {name: string, content: string}) {
+    this.scriptPreviewContent = file.content;
+    this.scriptPreviewFileName = file.name;
+  }
+
+  closeScriptPreview() {
+    this.scriptPreviewContent = null;
+    this.scriptPreviewFileName = '';
+  }
+
+  onFileSelectedScript(event: any) {
+    const files: FileList = event.target.files;
+    Array.from(files).forEach(file => {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      if (ext !== 'txt') {
+        alert('Only .txt files are allowed for SRT to Script.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        let text = e.target.result;
+        // Convert SRT time format to mm:ss - mm:ss if present
+        // Match lines like: 00:01:23,456 --> 00:01:25,789
+        text = text.replace(/(\d{2}):(\d{2}):(\d{2}),\d{3}\s*-->\s*(\d{2}):(\d{2}):(\d{2}),\d{3}/g, (match, h1, m1, s1, h2, m2, s2) => {
+          const startMin = (parseInt(h1) * 60 + parseInt(m1)).toString();
+          const startSec = s1;
+          const endMin = (parseInt(h2) * 60 + parseInt(m2)).toString();
+          const endSec = s2;
+          return `${startMin}:${startSec} - ${endMin}:${endSec}`;
+        });
+        this.scriptFiles.push({name: file.name, content: text});
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  onDropScript(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver = false;
+    if (event.dataTransfer && event.dataTransfer.files.length > 0) {
+      const fileEvent = { target: { files: event.dataTransfer.files } };
+      this.onFileSelectedScript(fileEvent);
+    }
+  }
+
+  downloadScriptFile(file: {name: string, content: string}, minSec: boolean = false) {
+    let content = file.content;
+    let name = file.name;
+    if (minSec) {
+      content = this.convertSrtToMinSec(content);
+      name = name.replace(/\.txt$/, '_minsec.txt');
+    }
+    const blob = new Blob([content], {type: 'text/plain'});
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  deleteScriptFile(file: {name: string, content: string}) {
+    this.scriptFiles = this.scriptFiles.filter(f => f !== file);
+  }
+
+  async downloadAllScripts() {
+    if (this.scriptFiles.length === 0) return;
+    const zip = new JSZip();
+    this.scriptFiles.forEach(file => {
+      zip.file(file.name, file.content);
+    });
+    const content = await zip.generateAsync({ type: 'blob' });
+    const url = window.URL.createObjectURL(content);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'script-files.zip';
     a.click();
     window.URL.revokeObjectURL(url);
   }
@@ -347,6 +454,17 @@ export class AppComponent {
       sub.warning = '';
     } else {
       sub.warning = [startWarning, endWarning].filter(Boolean).join('; ');
+    }
+  }
+
+  activeTab: string = 'timestamp';
+
+  // Keyboard navigation for tab buttons
+  onTabKeydown(event: KeyboardEvent, tab: 'timestamp' | 'script') {
+    if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+      event.preventDefault();
+      const nextTab = tab === 'timestamp' ? 'script' : 'timestamp';
+      this.switchTab(nextTab);
     }
   }
 }

@@ -1,3 +1,241 @@
+/* Solid blue background for this encapsulation attribute */
+.main-header-tabs[_ngcontent-xvc-c13] {
+  background: #1976d2;
+}
+/* Solid blue background for this encapsulation attribute */
+.main-header-tabs[_ngcontent-gdr-c13] {
+  background: #1976d2;
+}
+/* Match .main-header background for this encapsulation attribute */
+.main-header-tabs[_ngcontent-vry-c13] {
+  background: linear-gradient(90deg, #1976d2 60%, #43cea2 100%);
+}
+/* Specific selector for Angular's emulated encapsulation attribute (dynamic example) */
+.main-header-tabs[_ngcontent-ygv-c13] {
+  max-width: 95vw !important;
+}
+/* --- Main Header Tabs: Cleaned and Consolidated Styles --- */
+.main-header-tabs {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0;
+  width: 98%;
+  max-width: 95vw;
+  margin: 0 auto 8px 17px;
+  padding: 0.5rem 0.5rem 0 0.5rem;
+  box-sizing: border-box;
+  background: #235be9;
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.04);
+  overflow-x: auto;
+}
+/* Responsive fix for main-header-tabs going out of page */
+@media (max-width: 700px) {
+  .main-header-tabs {
+    max-width: 95vw;
+    padding: 0.5rem 0.2rem 0 0.2rem;
+    border-radius: 0;
+  }
+}
+@media (max-width: 800px) {
+  .main-header-tabs {
+    max-width: 95vw;
+    padding: 0.5rem 0.5rem;
+  }
+}
+/* Specific selector for Angular's emulated encapsulation attribute (placed last for override) */
+.main-header-tabs[_ngcontent-mvh-c13] {
+  max-width: 95vw !important;
+}
+/* --- End Main Header Tabs Styles --- */
+.main-header-tabs {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0;
+  width: 97%;
+  max-width: 480px;
+  margin: 0 auto 8px auto;
+  padding: 0.5rem 0.5rem 0 0.5rem;
+  box-sizing: border-box;
+  background: linear-gradient(90deg,#1976d2 60%,#43cea2 100%);
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.04);
+  overflow-x: auto;
+}
+
+.main-header-tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 1.08rem;
+  padding: 12px 32px 10px 32px;
+  color: #444;
+  cursor: pointer;
+  border-radius: 10px 10px 0 0;
+  margin: 0 2px 0 0;
+  font-weight: 500;
+  transition: background 0.18s, color 0.18s, border-bottom 0.18s;
+  outline: none;
+  min-width: 120px;
+  white-space: nowrap;
+  box-shadow: none;
+}
+.main-header-tab-btn:last-child {
+  margin-right: 0;
+}
+.main-header-tab-btn.tab-active {
+  background: #fff;
+  color: #1976d2;
+  border-bottom: 3px solid #1976d2;
+  font-weight: 700;
+  box-shadow: 0 -2px 8px rgba(25, 118, 210, 0.08);
+  z-index: 2;
+}
+.main-header-tab-btn:focus {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+  background: #317ac3;
+  color: #1565c0;
+  z-index: 3;
+}
+.main-header-tab-btn:hover:not(.tab-active) {
+  background: #4d5053;
+  color: #1565c0;
+}
+.tab-warning {
+  color: #d32f2f;
+  background: #fff3e0;
+  border: 1px solid #ffd6d6;
+  border-radius: 4px;
+  padding: 6px 16px;
+  margin-top: 8px;
+  margin-left: 8px;
+  font-size: 1em;
+  font-weight: 500;
+  display: inline-block;
+}
+
+@media (max-width: 700px) {
+  .main-header-tabs {
+    max-width: 95vw;
+    padding: 0.5rem 0.2rem 0 0.2rem;
+    border-radius: 0;
+  }
+  .main-header-tab-btn {
+    font-size: 0.98rem;
+    padding: 10px 12px 8px 12px;
+    min-width: 90px;
+  }
+}
+/* Responsive fix for main-header-tabs going out of page */
+.main-header-tabs {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 95vw;
+  margin: 0 auto;
+  padding: 0.5rem 0.5rem;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+.main-header-tab-btn {
+  background: #f5f7fa;
+  border: none;
+  border-radius: 4px 4px 0 0;
+  padding: 10px 24px;
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  outline: none;
+  min-width: 140px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.main-header-tab-btn.tab-active,
+.main-header-tab-btn.tab-active:focus {
+  background: #1976d2;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+}
+
+@media (max-width: 800px) {
+  .main-header-tabs {
+    max-width: 95vw;
+    padding: 0.5rem 0.5rem;
+  }
+  .main-header-tab-btn {
+    font-size: 0.95rem;
+    padding: 8px 12px;
+    min-width: 100px;
+  }
+}
+/* Tab Navigation Styles */
+.main-header-tabs {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 0;
+  margin-left: 24px;
+}
+.main-header-tab-btn {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  padding: 0.7rem 2.2rem 0.7rem 2.2rem;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  color: #fff;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  outline: none;
+  margin-right: 0px;
+  margin-left: 0px;
+  border-bottom: 2px solid transparent;
+  position: relative;
+  z-index: 1;
+}
+.main-header-tab-btn.tab-active {
+  background: #fff;
+  color: #1976d2;
+  font-weight: bold;
+  border-bottom: 2px solid #1976d2;
+  box-shadow: 0 -2px 8px rgba(25, 118, 210, 0.08);
+  z-index: 2;
+}
+.main-header-tab-btn:not(:last-child) {
+  border-right: 1px solid #e0e0e0;
+}
+.main-header-tab-btn:focus {
+  outline: 2px solid #ffe082;
+  outline-offset: 2px;
+  z-index: 3;
+}
+.main-header-tab-btn:hover {
+  background: #e3f0fd;
+  color: #1565c0;
+}
+.tab-warning {
+  color: #d32f2f;
+  background: #fff3e0;
+  border: 1px solid #ffd6d6;
+  border-radius: 4px;
+  padding: 6px 16px;
+  margin-top: 8px;
+  margin-left: 8px;
+  font-size: 1em;
+  font-weight: 500;
+  display: inline-block;
+}
 .preview-modal-actions button {
   margin-left: 8px;
   padding: 6px 16px;
@@ -491,31 +729,45 @@ button:hover {
   color: #ffe082;
 }
 
+/* Modern, user-friendly main-header styling */
 .main-header {
-  display: -moz-flex;
-  display: -webkit-flex;
-  display: -ms-flex;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  width: 100vw;
-  min-height: 64px;
-  background-color: #5e42a6;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 72px;
+  background: linear-gradient(90deg, #1976d2 60%, #43cea2 100%);
   color: #fff;
   font-family: 'Segoe UI', Arial, sans-serif;
   font-size: 2rem;
   font-weight: 700;
   letter-spacing: 1.5px;
-  box-shadow: 0 2px 8px rgba(94, 66, 166, 0.08);
+  box-shadow: 0 2px 12px rgba(25, 118, 210, 0.10);
   margin-bottom: 0;
   z-index: 100;
+  border-radius: 0 0 18px 18px;
+  position: relative;
+  padding: 0 0 8px 0;
 }
 
 .main-header-title {
-  padding: 16px 0;
+  padding: 18px 0 0 0;
   text-align: center;
-  width: 100%;
+  width: 97%;
+  max-width: 95vw;
+  margin: 0 auto;
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1.5px;
+  text-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+/* Remove duplicate/old tab styles if present above this line for clarity */
 
 .table.table-bordered {
   width: 100%;

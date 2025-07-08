@@ -64,49 +64,120 @@
   </div>
 </div>
 <header class="main-header">
-  <span class="main-header-title">SRT Timestamp Converter</span>
+  <span class="main-header-title">SRT Timestamp Validator & Script Converter</span>
+  <nav class="main-header-tabs">
+    <button
+      class="main-header-tab-btn"
+      [ngClass]="{ 'tab-active': activeTab === 'timestamp' }"
+      (click)="switchTab('timestamp')"
+      (keydown)="onTabKeydown($event, 'timestamp')"
+      tabindex="0"
+      type="button"
+      
+    >
+      SRT to Timestamp
+    </button>
+    <button
+      class="main-header-tab-btn"
+      [ngClass]="{ 'tab-active': activeTab === 'script' }"
+      (click)="switchTab('script')"
+      (keydown)="onTabKeydown($event, 'script')"
+      tabindex="0"
+      type="button"
+      
+    >
+      SRT to Script
+    </button>
+    <div *ngIf="tabWarning" class="tab-warning">{{ tabWarning }}</div>
+  </nav>
 </header>
 
-<div style="text-align:center; margin-top: 20px;">
-  <h2 style="display:none;">SRT Timestamp Converter</h2>  
-  <div 
-    class="drop-zone" 
-    (drop)="onDrop($event)" 
-    (dragover)="onDragOver($event)" 
-    (dragleave)="onDragLeave($event)"
-    [class.dragover]="isDragOver"
-    style="border: 2px dashed #007bff; border-radius: 4px; padding: 20px; cursor: pointer;"
-  >
-    <span>Drag & drop .txt,.srt files here or</span>
-    <input type="file" (change)="onFileSelected($event)" multiple accept=".txt,.srt" style="display:inline-block; margin-left:8px;" />
+<div *ngIf="activeTab === 'timestamp'">
+  <div style="text-align:center; margin-top: 20px;">
+    <h2 style="display:none;">SRT Timestamp Converter</h2>  
+    <div 
+      class="drop-zone" 
+      (drop)="onDrop($event)" 
+      (dragover)="onDragOver($event)" 
+      (dragleave)="onDragLeave($event)"
+      [class.dragover]="isDragOver"
+      style="border: 2px dashed #007bff; border-radius: 4px; padding: 20px; cursor: pointer;"
+    >
+      <span>Drag & drop .txt,.srt files here or</span>
+      <input type="file" (change)="onFileSelected($event)" multiple accept=".txt,.srt" style="display:inline-block; margin-left:8px;" />
+    </div>
+  </div>
+
+  <div *ngIf="convertedFiles.length > 0" style="margin-top: 20px;">
+    <h2>Converted Files</h2>
+    <div style="text-align:right; margin-bottom: 10px;">
+      <select [(ngModel)]="downloadType" style="padding: 4px 8px;">
+        <option value="txt">.txt</option>
+        <option value="srt">.srt</option>      
+      </select>
+      <span style="margin-left: 8px; font-size: 14px; color: #555;">Download as</span>
+      <button (click)="downloadAll()" style="margin-left: 16px;">Download All</button>
+    </div>
+  <ul>
+    <li *ngFor="let file of convertedFiles">
+      <span class="file-name">{{file.name}}</span>
+      <span class="file-actions">
+        <button 
+          (click)="openPreview(file)"
+          [ngStyle]="file.hasCriticalError ? {'background-color':'#d32f2f', 'color':'#fff'} : {}"
+          [attr.aria-label]="file.hasCriticalError ? 'Preview (SRT errors detected)' : 'Preview'"
+          [attr.title]="file.hasCriticalError ? 'SRT time errors detected in this file' : 'Preview file'"
+        >Preview</button>
+        <button (click)="downloadFile(file)">Download</button>
+        <button (click)="deleteFile(file)">Delete</button>
+      </span>
+    </li>
+  </ul>
   </div>
 </div>
-
-<div *ngIf="convertedFiles.length > 0" style="margin-top: 20px;">
-  <h2>Converted Files</h2>
-  <div style="text-align:right; margin-bottom: 10px;">
-    <select [(ngModel)]="downloadType" style="padding: 4px 8px;">
-      <option value="txt">.txt</option>
-      <option value="srt">.srt</option>      
-    </select>
-    <span style="margin-left: 8px; font-size: 14px; color: #555;">Download as</span>
-    <button (click)="downloadAll()" style="margin-left: 16px;">Download All</button>
+<div *ngIf="activeTab === 'script'">
+  <div style="text-align:center; margin-top: 40px;">
+    <h2>SRT to Script</h2>
+    <div 
+      class="drop-zone" 
+      (drop)="onDropScript($event)" 
+      (dragover)="onDragOver($event)" 
+      (dragleave)="onDragLeave($event)"
+      [class.dragover]="isDragOver"
+      style="border: 2px dashed #007bff; border-radius: 4px; padding: 20px; cursor: pointer;"
+    >
+      <span>Drag & drop .txt files here or</span>
+      <input type="file" (change)="onFileSelectedScript($event)" multiple accept=".txt" style="display:inline-block; margin-left:8px;" />
+    </div>
+    <div *ngIf="scriptFiles && scriptFiles.length > 0" style="margin-top: 20px;">
+      <h2>Script Files</h2>
+      <div style="text-align:right; margin-bottom: 10px;">
+        <button (click)="downloadAllScripts()" style="margin-left: 16px;">Download All Scripts</button>
+      </div>
+      <ul>
+        <li *ngFor="let file of scriptFiles">
+          <span class="file-name">{{file.name}}</span>
+          <span class="file-actions">
+            <button (click)="openScriptPreview(file)">Preview</button>
+            <button (click)="downloadScriptFile(file, true)">Download (mm:ss)</button>
+            <button (click)="deleteScriptFile(file)">Delete</button>
+          </span>
+<!-- Script Preview Modal -->
+<div *ngIf="scriptPreviewContent !== null" class="preview-modal">
+  <div class="preview-modal-content">
+    <div class="preview-modal-header">
+      <span class="preview-modal-title" style="max-width: 40vw; flex: none;">Preview: {{ scriptPreviewFileName }}</span>
+      <button class="preview-modal-close" (click)="closeScriptPreview()" title="Close">&times;</button>
+    </div>
+    <div class="preview-modal-body">
+      <pre style="width:100%; min-height:200px; background:#fff; color:#222; font-family:inherit; font-size:1em; padding:12px; white-space:pre-wrap;">{{ scriptPreviewContent }}</pre>
+    </div>
   </div>
-<ul>
-  <li *ngFor="let file of convertedFiles">
-    <span class="file-name">{{file.name}}</span>
-    <span class="file-actions">
-      <button 
-        (click)="openPreview(file)"
-        [ngStyle]="file.hasCriticalError ? {'background-color':'#d32f2f', 'color':'#fff'} : {}"
-        [attr.aria-label]="file.hasCriticalError ? 'Preview (SRT errors detected)' : 'Preview'"
-        [attr.title]="file.hasCriticalError ? 'SRT time errors detected in this file' : 'Preview file'"
-      >Preview</button>
-      <button (click)="downloadFile(file)">Download</button>
-      <button (click)="deleteFile(file)">Delete</button>
-    </span>
-  </li>
-</ul>
+</div>
+        </li>
+      </ul>
+    </div>
+  </div>
 </div>
 
 <footer class="footer-signature" style="text-align:right; margin-top: 20px;">
