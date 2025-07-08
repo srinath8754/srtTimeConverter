@@ -327,31 +327,32 @@ export class AppComponent implements OnInit {
     let baseName = file.name.replace(/\.[^.]+$/, '');
     let downloadName = baseName + '.' + this.downloadType;
     if (this.downloadType === 'docx') {
-      // Convert SRT or TXT to DOCX
+      // Convert SRT or TXT to DOCX (same logic as preview)
       const paragraphs: Paragraph[] = [];
-      // If SRT, try to parse and format as subtitle blocks
-      if (/-->/g.test(file.content)) {
-        // SRT: split by double newlines (subtitle blocks)
-        const blocks = file.content.split(/\n{2,}/);
-        for (const block of blocks) {
-          const lines = block.split(/\n/);
-          if (lines.length >= 3) {
-            // SRT block: number, time, text
-            paragraphs.push(new Paragraph({
-              children: [
-                new TextRun({ text: lines[0], bold: true }),
-                new TextRun({ text: ' ' }),
-                new TextRun({ text: lines[1], italics: true, size: 20 }),
-              ],
-            }));
-            paragraphs.push(new Paragraph(lines.slice(2).join('\n')));
-            paragraphs.push(new Paragraph(''));
-          } else {
-            paragraphs.push(new Paragraph(block));
-            paragraphs.push(new Paragraph(''));
-          }
+      // Try to parse as SRT: number, time, text blocks
+      const srtBlockRegex = /((?:\d+\n)?\d{2}:\d{2}:\d{2},\d{3}\s+-->\s+\d{2}:\d{2}:\d{2},\d{3}\n(?:[^\n]*\n?)+?)(?=\n\d+\n\d{2}:|$)/g;
+      let match;
+      let found = false;
+      while ((match = srtBlockRegex.exec(file.content)) !== null) {
+        found = true;
+        const block = match[1].trim();
+        const lines = block.split(/\n/);
+        if (lines.length >= 3) {
+          paragraphs.push(new Paragraph({
+            children: [
+              new TextRun({ text: lines[0], bold: true }),
+              new TextRun({ text: ' ' }),
+              new TextRun({ text: lines[1], italics: true, size: 20 }),
+            ],
+          }));
+          paragraphs.push(new Paragraph(lines.slice(2).join('\n')));
+          paragraphs.push(new Paragraph(''));
+        } else {
+          paragraphs.push(new Paragraph(block));
+          paragraphs.push(new Paragraph(''));
         }
-      } else {
+      }
+      if (!found) {
         // Plain text: one paragraph per line
         file.content.split(/\n/).forEach(line => {
           paragraphs.push(new Paragraph(line));
@@ -411,11 +412,59 @@ export class AppComponent implements OnInit {
   async downloadAll() {
     if (this.convertedFiles.length === 0) return;
     const zip = new JSZip();
+    const docxPromises: Promise<void>[] = [];
     this.convertedFiles.forEach(file => {
       let baseName = file.name.replace(/\.[^.]+$/, '');
       let downloadName = baseName + '.' + this.downloadType;
-      zip.file(downloadName, file.content);
+      if (this.downloadType === 'docx') {
+        // Convert SRT or TXT to DOCX (same logic as downloadFile)
+        const paragraphs: Paragraph[] = [];
+        const srtBlockRegex = /((?:\d+\n)?\d{2}:\d{2}:\d{2},\d{3}\s+-->\s+\d{2}:\d{2}:\d{2},\d{3}\n(?:[^\n]*\n?)+?)(?=\n\d+\n\d{2}:|$)/g;
+        let match;
+        let found = false;
+        while ((match = srtBlockRegex.exec(file.content)) !== null) {
+          found = true;
+          const block = match[1].trim();
+          const lines = block.split(/\n/);
+          if (lines.length >= 3) {
+            paragraphs.push(new Paragraph({
+              children: [
+                new TextRun({ text: lines[0], bold: true }),
+                new TextRun({ text: ' ' }),
+                new TextRun({ text: lines[1], italics: true, size: 20 }),
+              ],
+            }));
+            paragraphs.push(new Paragraph(lines.slice(2).join('\n')));
+            paragraphs.push(new Paragraph(''));
+          } else {
+            paragraphs.push(new Paragraph(block));
+            paragraphs.push(new Paragraph(''));
+          }
+        }
+        if (!found) {
+          // Plain text: one paragraph per line
+          file.content.split(/\n/).forEach(line => {
+            paragraphs.push(new Paragraph(line));
+          });
+        }
+        const doc = new Document({
+          sections: [
+            { properties: {}, children: paragraphs }
+          ]
+        });
+        // Add to zip asynchronously
+        const promise = Packer.toBlob(doc).then(blob => {
+          zip.file(downloadName, blob);
+        });
+        docxPromises.push(promise);
+      } else {
+        // txt or srt
+        zip.file(downloadName, file.content);
+      }
     });
+    if (this.downloadType === 'docx') {
+      await Promise.all(docxPromises);
+    }
     const content = await zip.generateAsync({ type: 'blob' });
     const url = window.URL.createObjectURL(content);
     const a = document.createElement('a');
