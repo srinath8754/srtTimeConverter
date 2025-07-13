@@ -114,7 +114,7 @@
       style="border: 2px dashed #007bff; border-radius: 4px; padding: 20px; cursor: pointer;"
     >
       <span>Drag & drop .txt,.srt files here or</span>
-      <input type="file" (change)="onFileSelected($event)" multiple accept=".txt,.srt" style="display:inline-block; margin-left:8px;" />
+      <input type="file" (change)="onFileSelected($event)" multiple accept=".srt,.txt,application/x-subrip,text/plain" style="display:inline-block; margin-left:8px;" />
     </div>
   </div>
 
@@ -158,7 +158,7 @@
       style="border: 2px dashed #007bff; border-radius: 4px; padding: 20px; cursor: pointer;"
     >
       <span>Drag & drop .txt , .srt files here or</span>
-      <input type="file" (change)="onFileSelectedScript($event)" multiple accept=".txt,.srt" style="display:inline-block; margin-left:8px;" />
+      <input type="file" (change)="onFileSelectedScript($event)" multiple accept=".srt,.txt,application/x-subrip,text/plain" style="display:inline-block; margin-left:8px;" />
     </div>
     <div *ngIf="scriptFiles && scriptFiles.length > 0" style="margin-top: 20px;">
       <h2>Script Files</h2>
