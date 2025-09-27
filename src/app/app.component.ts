@@ -264,6 +264,26 @@ export class AppComponent implements OnInit {
   }
 
   closePreview() {
+    if (this.previewContent !== null && this.previewFileName) {
+      // Compose updated SRT from current subtitles array
+      const updatedSrt = this.subtitles.map((sub, idx) => {
+        return (
+          (idx + 1) + '\n' +
+          sub.start + ' --> ' + sub.end + '\n' +
+          sub.text + '\n'
+        );
+      }).join('\n');
+      // Find the file in convertedFiles and update its content
+      const fileIdx = this.convertedFiles.findIndex(f => f.name === this.previewFileName);
+      if (fileIdx !== -1) {
+        this.convertedFiles[fileIdx].content = updatedSrt;
+        // Re-validate for time errors
+        const validSrtTimeLine = /^\d{2}:\d{2}:\d{2},\d{3}\s+-->\s+\d{2}:\d{2}:\d{2},\d{3}$/;
+        const lines = updatedSrt.split('\n');
+        const hasInvalidTimestamp = lines.some(line => /-->/g.test(line) && !validSrtTimeLine.test(line.trim()));
+        this.convertedFiles[fileIdx].hasCriticalError = hasInvalidTimestamp;
+      }
+    }
     this.previewContent = null;
     this.previewFileName = '';
     this.previewErrorLines = new Set();
